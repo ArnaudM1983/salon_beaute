@@ -20,7 +20,7 @@ class UserProfileController extends AbstractController
     }
 
     #[Route('/profil', name: 'app_profil', methods: ['GET', 'PUT'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    
     public function profil(Request $request): JsonResponse
     {
         // Récupérer l'utilisateur actuellement authentifié
