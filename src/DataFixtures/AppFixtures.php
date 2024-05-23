@@ -29,15 +29,23 @@ class AppFixtures extends Fixture
             $manager->persist($user);
         }
 
+        // Départements fictifs
+        $departements = ['01', '02', '03', '04', '05', '06'];
+
+        // Régions fictives
+        $regions = ['Auvergne-Rhône-Alpes', 'Hauts-de-France', 'Île-de-France', 'Normandie', 'Occitanie', 'Provence-Alpes-Côte d\'Azur'];
+
         // Création de 6 profils de salons de beauté fictifs
-        for ($i = 1; $i <= 6; $i++) {
+        for ($i = 0; $i < 6; $i++) {
             $salon = new SalonDeBeaute();
-            $salon->setNom("Salon de beauté " . $i);
-            $salon->setAdresse("Adresse du salon " . $i);
+            $salon->setNom("Salon de beauté " . ($i + 1));
+            $salon->setAdresse("Adresse du salon " . ($i + 1));
             $salon->setDateOuverture(new \DateTime());
             $salon->setNbEmployes(rand(1, 10));
-            $salon->setNomRepresentant("Nom du représentant " . $i);
-            $salon->setPrenomRepresentant("Prénom du représentant " . $i);
+            $salon->setNomRepresentant("Nom du représentant " . ($i + 1));
+            $salon->setPrenomRepresentant("Prénom du représentant " . ($i + 1));
+            $salon->setRegion($regions[$i]);
+            $salon->setDepartement($departements[$i]);
             $manager->persist($salon);
         }
 

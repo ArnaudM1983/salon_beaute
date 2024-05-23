@@ -45,8 +45,8 @@ class SendReminderEmailsCommand extends Command
             $email = (new Email())
                 ->from('elisdewall@gmail.com')
                 ->to($user->getEmail())
-                ->subject('Reminder: Please submit your turnover for last month')
-                ->text('Dear '.$user->getUsername().', please submit your turnover for last month.');
+                ->subject('Rappel : Saisie du chiffre d\'affaires du mois passé')
+                ->text('Cher '.$user->getUsername().', vous n\'avez pas encore saisi votre chiffre d\'affaires pour le mois précédent. Merci de le faire dès que possible.');
 
             $this->mailer->send($email);
         }

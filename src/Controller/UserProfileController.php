@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\ChiffreAffaires;
 use App\Entity\SalonDeBeaute;
+use App\Repository\StatisticRepository;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -106,6 +108,7 @@ class UserProfileController extends AbstractController
         return $this->json($data);
     }
 
+    // Endpoint nouvelle saisie
     #[Route('/nouvelle-saisie', name: 'app_nouvelle_saisie', methods: ['POST'])]
     public function nouvelleSaisie(Request $request): JsonResponse
     {
@@ -141,6 +144,15 @@ class UserProfileController extends AbstractController
         // Sauvegarder l'enregistrement dans la base de données
         $this->entityManager->persist($chiffreAffaires);
         $this->entityManager->flush();
+
+        // Récupérer le salon de beauté de l'utilisateur pour obtenir la région et le département
+        $salonRepository = $this->entityManager->getRepository(SalonDeBeaute::class);
+        $salon = $salonRepository->findOneBy(['user' => $user]);
+
+        if ($salon) {
+            // Mettre à jour les statistiques
+            $this->statisticRepository->updateStatistics($salon->getRegion(), $salon->getDepartement());
+        }
 
         return $this->json(['message' => 'Chiffre d\'affaires enregistré avec succès'], 201);
     }
