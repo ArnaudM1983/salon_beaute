@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\ChiffreAffaires;
 use App\Entity\SalonDeBeaute;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,8 +20,8 @@ class UserProfileController extends AbstractController
         $this->entityManager = $entityManager;
     }
 
+    // Endpoint profil
     #[Route('/profil', name: 'app_profil', methods: ['GET', 'PUT'])]
-    
     public function profil(Request $request): JsonResponse
     {
         // Récupérer l'utilisateur actuellement authentifié
@@ -76,5 +77,71 @@ class UserProfileController extends AbstractController
         }
 
         return $this->json(['message' => 'Method not allowed'], 405);
+    }
+
+    // Endpoint historique
+    #[Route('/historique', name: 'app_historique', methods: ['GET'])]
+    public function historique(): JsonResponse
+    {
+        // Récupérer l'utilisateur actuellement authentifié
+        $user = $this->getUser();
+
+        // Récupérer les chiffres d'affaires associés à cet utilisateur
+        $caRepository = $this->entityManager->getRepository(ChiffreAffaires::class);
+        $chiffresAffaires = $caRepository->findBy(['user' => $user]);
+
+        if (!$chiffresAffaires) {
+            return $this->json(['message' => 'No historical data found for this user'], 404);
+        }
+
+        // Préparer les données pour la réponse JSON
+        $data = [];
+        foreach ($chiffresAffaires as $ca) {
+            $data[] = [
+                'mois' => $ca->getMois()->format('Y-m'),
+                'chiffre_affaires' => $ca->getChiffreAffaires(),
+            ];
+        }
+
+        return $this->json($data);
+    }
+
+    #[Route('/nouvelle-saisie', name: 'app_nouvelle_saisie', methods: ['POST'])]
+    public function nouvelleSaisie(Request $request): JsonResponse
+    {
+        // Récupérer l'utilisateur actuellement authentifié
+        $user = $this->getUser();
+
+        // Récupérer les données de la requête
+        $data = json_decode($request->getContent(), true);
+
+        // Vérifier que le chiffre d'affaires est présent
+        if (!isset($data['chiffre_affaires'])) {
+            return $this->json(['message' => 'Chiffre d\'affaires manquant'], 400);
+        }
+
+        // Calculer le mois précédent
+        $date = new \DateTime();
+        $date->modify('first day of last month');
+        
+        // Vérifier si un enregistrement pour le mois précédent existe déjà
+        $caRepository = $this->entityManager->getRepository(ChiffreAffaires::class);
+        $existingCa = $caRepository->findOneBy(['user' => $user, 'mois' => $date]);
+
+        if ($existingCa) {
+            return $this->json(['message' => 'Le chiffre d\'affaires pour le mois précédent existe déjà'], 400);
+        }
+
+        // Créer un nouvel enregistrement de chiffre d'affaires
+        $chiffreAffaires = new ChiffreAffaires();
+        $chiffreAffaires->setUser($user);
+        $chiffreAffaires->setMois($date);
+        $chiffreAffaires->setChiffreAffaires($data['chiffre_affaires']);
+
+        // Sauvegarder l'enregistrement dans la base de données
+        $this->entityManager->persist($chiffreAffaires);
+        $this->entityManager->flush();
+
+        return $this->json(['message' => 'Chiffre d\'affaires enregistré avec succès'], 201);
     }
 }

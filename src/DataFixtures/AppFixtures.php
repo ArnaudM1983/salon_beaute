@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\User;
 use App\Entity\SalonDeBeaute;
+use App\Entity\ChiffreAffaires;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -38,6 +39,13 @@ class AppFixtures extends Fixture
             $salon->setNomRepresentant("Nom du représentant " . $i);
             $salon->setPrenomRepresentant("Prénom du représentant " . $i);
             $manager->persist($salon);
+        }
+
+        for ($i = 1; $i <= 12; $i++) { // 12 mois de données pour chaque utilisateur
+            $chiffreAffaires = new ChiffreAffaires();
+            $chiffreAffaires->setMois(new \DateTime("2023-$i-01"));
+            $chiffreAffaires->setChiffreAffaires(rand(1000, 10000)); // Chiffre d'affaires aléatoire
+            $manager->persist($chiffreAffaires);
         }
 
         $manager->flush();

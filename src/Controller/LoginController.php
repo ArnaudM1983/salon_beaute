@@ -50,4 +50,6 @@ class LoginController extends AbstractController
         // Renvoyer le token JWT dans la réponse JSON
         return new JsonResponse(['token' => $token]);
     }
+
+    
 }
